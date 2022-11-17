@@ -1,8 +1,11 @@
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "misc-no-recursion"
 #include <iostream>
 #include "func.h"
 #include <string>
 #include <cstdlib>
 #include <sstream>
+#include <csignal>
 
 using namespace std;
 
@@ -11,6 +14,7 @@ class Register {
         int lenarr = 8;
         string reg[8] = {"AH","AL","BH","BL","CH","CL","DH","DL"};
         uint8_t regprim[8] = {0,0,0,0,0,0,0,0};
+        uint8_t memory[65536];
 };
 Register reg;
 
@@ -26,6 +30,13 @@ int checkregint(const string& namereg){
     return false;
 }
 
+void signal_handler(int signal_num)
+{
+    cout << "The interrupt signal is (" << signal_num << "). \n";
+
+    // It terminates the program
+    exit(signal_num);
+}
 // Function that checks if input exist in register
 bool checkreg(const string& namereg){
     int val = 0;
@@ -46,6 +57,7 @@ bool checkdecval(int hexval){
 }
 
 void regprint(){
+    signal(SIGABRT, signal_handler);
     for (int x = 0; x < reg.lenarr;x++){
         int hexval = reg.regprim[x];
         std::stringstream ss;
@@ -56,6 +68,7 @@ void regprint(){
 }
 
 void MOV(){
+    signal(SIGABRT, signal_handler);
     int indexfirstreg;
     int indexsecondreg;
     string firstreg;
@@ -79,6 +92,7 @@ void MOV(){
 }
 
 void XCHG(){
+    signal(SIGABRT, signal_handler);
     int indexfirstreg;
     int indexsecondreg;
     string firstreg;
@@ -104,17 +118,15 @@ void XCHG(){
 }
 
 void NOT(){
+    signal(SIGABRT, signal_handler);
     int indexfirstreg;
     string firstreg;
     cout << "Enter register:";
     cin >> firstreg;
     cout << endl;
     if (checkreg(firstreg)){
-        int maxval = 255;
         indexfirstreg = checkregint(firstreg);
-        int tempmem = reg.regprim[indexfirstreg];
-        tempmem = maxval - tempmem;
-        reg.regprim[indexfirstreg] = tempmem;
+        reg.regprim[indexfirstreg] = ~reg.regprim[indexfirstreg];
         regprint();
         menu();
     }
@@ -124,6 +136,7 @@ void NOT(){
 }
 
 void INC(){
+    signal(SIGABRT, signal_handler);
     int indexfirstreg;
     string firstreg;
     cout << "Enter register:";
@@ -141,6 +154,7 @@ void INC(){
 }
 
 void DEC(){
+    signal(SIGABRT, signal_handler);
     int indexfirstreg;
     string firstreg;
     cout << "Enter register:";
@@ -157,7 +171,78 @@ void DEC(){
     }
 }
 
+void AND(){
+    signal(SIGABRT, signal_handler);
+    int indexfirstreg;
+    int indexsecondreg;
+    string firstreg;
+    string secondreg;
+    cout << "Enter first register:";
+    cin >> firstreg;
+    cout << endl;
+    cout << "Enter Second register:";
+    cin >> secondreg;
+    cout << endl;
+    if (checkreg(firstreg) || checkreg(firstreg)){
+        indexfirstreg = checkregint(firstreg);
+        indexsecondreg = checkregint(secondreg);
+        reg.regprim[indexfirstreg] = reg.regprim[indexfirstreg] & reg.regprim[indexsecondreg];
+        regprint();
+        menu();
+    }
+    else {
+        AND();
+    }
+}
+void OR(){
+    signal(SIGABRT, signal_handler);
+    int indexfirstreg;
+    int indexsecondreg;
+    string firstreg;
+    string secondreg;
+    cout << "Enter first register:";
+    cin >> firstreg;
+    cout << endl;
+    cout << "Enter Second register:";
+    cin >> secondreg;
+    cout << endl;
+    if (checkreg(firstreg) || checkreg(firstreg)){
+        indexfirstreg = checkregint(firstreg);
+        indexsecondreg = checkregint(secondreg);
+        reg.regprim[indexfirstreg] = reg.regprim[indexfirstreg] | reg.regprim[indexsecondreg];
+        regprint();
+        menu();
+    }
+    else {
+        OR();
+    }
+}
+void XOR(){
+    signal(SIGABRT, signal_handler);
+    int indexfirstreg;
+    int indexsecondreg;
+    string firstreg;
+    string secondreg;
+    cout << "Enter first register:";
+    cin >> firstreg;
+    cout << endl;
+    cout << "Enter Second register:";
+    cin >> secondreg;
+    cout << endl;
+    if (checkreg(firstreg) || checkreg(firstreg)){
+        indexfirstreg = checkregint(firstreg);
+        indexsecondreg = checkregint(secondreg);
+        reg.regprim[indexfirstreg] = reg.regprim[indexfirstreg] ^ reg.regprim[indexsecondreg];
+        regprint();
+        menu();
+    }
+    else {
+        XOR();
+    }
+}
+
 void menu(){
+    signal(SIGABRT, signal_handler);
     int instruct;
     cout << "1. MOV" << endl;
     cout << "2. XCHG" << endl;
@@ -165,10 +250,11 @@ void menu(){
     cout << "4. INC" << endl;
     cout << "5. DEC" << endl;
     cout << "6. AND" << endl;
-    cout << "6. AND" << endl;
-    cout << "6. AND" << endl;
-    cout << "6. AND" << endl;
-    cout << "7. EXIT" << endl;
+    cout << "7. OR" << endl;
+    cout << "8. XOR" << endl;
+    cout << "9. ADD" << endl;
+    cout << "10.SUB" << endl;
+    cout << "11.EXIT" << endl;
     cout << "Choose instruction :";
     cin  >> instruct;
 
@@ -184,6 +270,16 @@ void menu(){
         case 5:
             DEC();
         case 6:
+            AND();
+        case 7:
+            OR();
+        case 8:
+            XOR();
+        case 9:
+//            ADD();
+        case 10:
+//            SUB();
+        case 11:
             exit(0);
         default:
             menu();
@@ -191,7 +287,9 @@ void menu(){
 
 }
 
+
 void defregfill(){
+    signal(SIGABRT, signal_handler);
     int defreg[8] ={0x01,0x04,0x69,0x35,0x58,0xA1,0x2C,0x97};
     for (int val = 0; val < reg.lenarr; val++)
         reg.regprim[val] = defreg[val];
@@ -200,6 +298,7 @@ void defregfill(){
 }
 
 void regfill(){
+    signal(SIGABRT, signal_handler);
     string defreg;
     cout << "Do you want to fill reg with default values? Y/N:";
     cin >> defreg;
@@ -222,9 +321,12 @@ void regfill(){
 
 
 int main() {
+    signal(SIGABRT, signal_handler);
     regfill();
     menu();
     return 0;
 }
 
 
+
+#pragma clang diagnostic pop
