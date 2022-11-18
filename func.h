@@ -1,5 +1,5 @@
 //
-// Created by Karol Śnieżek on 27/10/2022.
+// Created by Wojciech Szyjka on 27/10/2022.
 //
 
 #ifndef INTEL_EMULATOR_FUNC_H
@@ -16,5 +16,7 @@ void DEC();
 void INC();
 void NOT();
 void AND();
+void ADD();
+void SUB();
 class Register;
 #endif //INTEL_EMULATOR_FUNC_H

@@ -194,6 +194,7 @@ void AND(){
         AND();
     }
 }
+
 void OR(){
     signal(SIGABRT, signal_handler);
     int indexfirstreg;
@@ -217,6 +218,7 @@ void OR(){
         OR();
     }
 }
+
 void XOR(){
     signal(SIGABRT, signal_handler);
     int indexfirstreg;
@@ -238,6 +240,60 @@ void XOR(){
     }
     else {
         XOR();
+    }
+}
+
+void ADD(){
+    signal(SIGABRT, signal_handler);
+    int indexfirstreg;
+    int indexsecondreg;
+    string firstreg;
+    string secondreg;
+    cout << "Enter first register:";
+    cin >> firstreg;
+    cout << endl;
+    cout << "Enter Second register:";
+    cin >> secondreg;
+    cout << endl;
+    if (checkreg(firstreg) || checkreg(firstreg)){
+        indexfirstreg = checkregint(firstreg);
+        indexsecondreg = checkregint(secondreg);
+        if ( reg.regprim[indexfirstreg] + reg.regprim[indexsecondreg] > 255){
+            reg.regprim[indexfirstreg] = (reg.regprim[indexfirstreg] + reg.regprim[indexsecondreg]) - 255;
+        }
+        reg.regprim[indexfirstreg] =  reg.regprim[indexfirstreg] + reg.regprim[indexsecondreg];
+        regprint();
+        menu();
+    }
+    else {
+        ADD();
+    }
+}
+
+void SUB(){
+    signal(SIGABRT, signal_handler);
+    int indexfirstreg;
+    int indexsecondreg;
+    string firstreg;
+    string secondreg;
+    cout << "Enter first register:";
+    cin >> firstreg;
+    cout << endl;
+    cout << "Enter Second register:";
+    cin >> secondreg;
+    cout << endl;
+    if (checkreg(firstreg) || checkreg(firstreg)){
+        indexfirstreg = checkregint(firstreg);
+        indexsecondreg = checkregint(secondreg);
+        if ( reg.regprim[indexfirstreg] + reg.regprim[indexsecondreg] < 0 ){
+            reg.regprim[indexfirstreg] = ~(reg.regprim[indexfirstreg]) + reg.regprim[indexsecondreg];
+        }
+        reg.regprim[indexfirstreg] =  reg.regprim[indexfirstreg] - reg.regprim[indexsecondreg];
+        regprint();
+        menu();
+    }
+    else {
+        SUB();
     }
 }
 
@@ -276,9 +332,9 @@ void menu(){
         case 8:
             XOR();
         case 9:
-//            ADD();
+            ADD();
         case 10:
-//            SUB();
+            SUB();
         case 11:
             exit(0);
         default:
