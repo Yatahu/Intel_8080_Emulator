@@ -6,17 +6,37 @@
 #include <cstdlib>
 #include <sstream>
 #include <csignal>
+#include "random.hpp"
 
+
+using Rand = effolkronium::random_static;
 using namespace std;
 
 class Register {
     public:
         int lenarr = 8;
+        int lenmem = 65536;
         string reg[8] = {"AH","AL","BH","BL","CH","CL","DH","DL"};
         uint8_t regprim[8] = {0,0,0,0,0,0,0,0};
         uint8_t memory[65536];
+        bool memorytrue = false;
 };
 Register reg;
+
+void Random(){
+    for (int i = 0; i < reg.lenmem ; i++){
+        reg.memory[i] = Rand::get(0,255);
+    }
+}
+
+bool checkmem(int mem){
+    if (mem < 65536 && mem >=0){
+        return true;
+    }
+    else {
+        return false;
+    }
+}
 
 // Function that match input id with id reg
 int checkregint(const string& namereg){
@@ -56,6 +76,11 @@ bool checkdecval(int hexval){
     return false;
 }
 
+void memprint(int index){
+    cout << "Memory " << index << " : " << reg.memory[index] << endl;
+    cout << endl;
+}
+
 void regprint(){
     signal(SIGABRT, signal_handler);
     for (int x = 0; x < reg.lenarr;x++){
@@ -69,237 +94,456 @@ void regprint(){
 
 void MOV(){
     signal(SIGABRT, signal_handler);
-    int indexfirstreg;
-    int indexsecondreg;
-    string firstreg;
-    string secondreg;
-    cout << "Enter first register:";
-    cin >> firstreg;
-    cout << endl;
-    cout << "Enter Second register:";
-    cin >> secondreg;
-    cout << endl;
-    if (checkreg(firstreg) || checkreg(firstreg)){
-        indexfirstreg = checkregint(firstreg);
-        indexsecondreg = checkregint(secondreg);
-        reg.regprim[indexfirstreg] = reg.regprim[indexsecondreg];
-        regprint();
-        menu();
+    if (reg.memorytrue){
+        int indexfirstreg;
+        string firstreg;
+        int secondmem;
+        cout << "Enter first register:";
+        cin >> firstreg;
+        cout << endl;
+        cout << "Enter memory adress:";
+        cin >> hex  >> secondmem;
+        cout << endl;
+        if (checkreg(firstreg) || checkmem(secondmem)) {
+            indexfirstreg = checkregint(firstreg);
+            reg.regprim[indexfirstreg] = reg.memory[secondmem];
+            memprint(secondmem);
+            regprint();
+            menu();
+        } else {
+            MOV();
+        }
     }
     else {
-        MOV();
+        int indexfirstreg;
+        int indexsecondreg;
+        string firstreg;
+        string secondreg;
+        cout << "Enter first register:";
+        cin >> firstreg;
+        cout << endl;
+        cout << "Enter Second register:";
+        cin >> secondreg;
+        cout << endl;
+        if (checkreg(firstreg) || checkreg(secondreg)) {
+            indexfirstreg = checkregint(firstreg);
+            indexsecondreg = checkregint(secondreg);
+            reg.regprim[indexfirstreg] = reg.regprim[indexsecondreg];
+            regprint();
+            menu();
+        } else {
+            MOV();
+        }
     }
 }
 
 void XCHG(){
     signal(SIGABRT, signal_handler);
-    int indexfirstreg;
-    int indexsecondreg;
-    string firstreg;
-    string secondreg;
-    cout << "Enter first register:";
-    cin >> firstreg;
-    cout << endl;
-    cout << "Enter Second register:";
-    cin >> secondreg;
-    cout << endl;
-    if (checkreg(firstreg) || checkreg(firstreg)){
-        indexfirstreg = checkregint(firstreg);
-        indexsecondreg = checkregint(secondreg);
-        int tempmem = reg.regprim[indexfirstreg];
-        reg.regprim[indexfirstreg] = reg.regprim[indexsecondreg];
-        reg.regprim[indexsecondreg] = tempmem;
-        regprint();
-        menu();
+    if (reg.memorytrue) {
+        int indexfirstreg;
+        string firstreg;
+        int secondmem;
+        cout << "Enter first register:";
+        cin >> firstreg;
+        cout << endl;
+        cout << "Enter memory address:";
+        cin >> hex  >> secondmem;
+        cout << endl;
+        if (checkreg(firstreg) || checkmem(secondmem)) {
+            indexfirstreg = checkregint(firstreg);
+            int tempmem = reg.regprim[indexfirstreg];
+            reg.regprim[indexfirstreg] = reg.memory[secondmem];
+            reg.memory[secondmem] = tempmem;
+            memprint(secondmem);
+            regprint();
+            menu();
+        } else {
+            XCHG();
+        }
     }
-    else {
-        XCHG();
+    else{
+        int indexfirstreg;
+        int indexsecondreg;
+        string firstreg;
+        string secondreg;
+        cout << "Enter first register:";
+        cin >> firstreg;
+        cout << endl;
+        cout << "Enter Second register:";
+        cin >> secondreg;
+        cout << endl;
+        if (checkreg(firstreg) || checkreg(secondreg)) {
+            indexfirstreg = checkregint(firstreg);
+            indexsecondreg = checkregint(secondreg);
+            int tempmem = reg.regprim[indexfirstreg];
+            reg.regprim[indexfirstreg] = reg.regprim[indexsecondreg];
+            reg.regprim[indexsecondreg] = tempmem;
+            regprint();
+            menu();
+        } else {
+            XCHG();
+        }
     }
 }
 
 void NOT(){
-    signal(SIGABRT, signal_handler);
-    int indexfirstreg;
-    string firstreg;
-    cout << "Enter register:";
-    cin >> firstreg;
-    cout << endl;
-    if (checkreg(firstreg)){
-        indexfirstreg = checkregint(firstreg);
-        reg.regprim[indexfirstreg] = ~reg.regprim[indexfirstreg];
-        regprint();
-        menu();
+    if (reg.memorytrue) {
+        int firstreg;
+        cout << "Enter memory address:";
+        cin >> hex >> firstreg;
+        cout << endl;
+        if (checkmem(firstreg)) {
+            reg.memory[firstreg] = ~reg.memory[firstreg];
+            memprint(firstreg);
+            regprint();
+            menu();
+        } else {
+            NOT();
+        }
     }
     else {
-        NOT();
+        signal(SIGABRT, signal_handler);
+        int indexfirstreg;
+        string firstreg;
+        cout << "Enter register:";
+        cin >> firstreg;
+        cout << endl;
+        if (checkreg(firstreg)) {
+            indexfirstreg = checkregint(firstreg);
+            reg.regprim[indexfirstreg] = ~reg.regprim[indexfirstreg];
+            regprint();
+            menu();
+        } else {
+            NOT();
+        }
     }
 }
 
 void INC(){
-    signal(SIGABRT, signal_handler);
-    int indexfirstreg;
-    string firstreg;
-    cout << "Enter register:";
-    cin >> firstreg;
-    cout << endl;
-    if (checkreg(firstreg)){ // || checkreg(firstreg)
-        indexfirstreg = checkregint(firstreg);
-        reg.regprim[indexfirstreg]++;
-        regprint();
-        menu();
+    if (reg.memorytrue) {
+        signal(SIGABRT, signal_handler);
+        int firstmem;
+        cout << "Enter memory address:";
+        cin >> hex >> firstmem;
+        cout << endl;
+        if (checkmem(firstmem)){
+            reg.memory[firstmem]++;
+            memprint(firstmem);
+            regprint();
+            menu();
+        }
+        else {
+            INC();
+        }
     }
-    else {
-        INC();
+    else{
+        signal(SIGABRT, signal_handler);
+        int indexfirstreg;
+        string firstreg;
+        cout << "Enter register:";
+        cin >> firstreg;
+        cout << endl;
+        if (checkreg(firstreg)){
+            indexfirstreg = checkregint(firstreg);
+            reg.regprim[indexfirstreg]++;
+            regprint();
+            menu();
+        }
+        else {
+            INC();
+        }
     }
 }
 
 void DEC(){
-    signal(SIGABRT, signal_handler);
-    int indexfirstreg;
-    string firstreg;
-    cout << "Enter register:";
-    cin >> firstreg;
-    cout << endl;
-    if (checkreg(firstreg)){ // || checkreg(firstreg)
-        indexfirstreg = checkregint(firstreg);
-        reg.regprim[indexfirstreg]--;
-        regprint();
-        menu();
+    if (reg.memorytrue) {
+        signal(SIGABRT, signal_handler);
+        int firstmem;
+        cout << "Enter register:";
+        cin >> hex >> firstmem;
+        cout << endl;
+        if (checkmem(firstmem)){
+            reg.memory[firstmem]--;
+            memprint(firstmem);
+            regprint();
+            menu();
+        }
+        else {
+            INC();
+        }
     }
     else {
-        INC();
+        signal(SIGABRT, signal_handler);
+        int indexfirstreg;
+        string firstreg;
+        cout << "Enter register:";
+        cin >> firstreg;
+        cout << endl;
+        if (checkreg(firstreg)){
+            indexfirstreg = checkregint(firstreg);
+            reg.regprim[indexfirstreg]--;
+            regprint();
+            menu();
+        }
+        else {
+            INC();
+        }
     }
 }
 
 void AND(){
     signal(SIGABRT, signal_handler);
-    int indexfirstreg;
-    int indexsecondreg;
-    string firstreg;
-    string secondreg;
-    cout << "Enter first register:";
-    cin >> firstreg;
-    cout << endl;
-    cout << "Enter Second register:";
-    cin >> secondreg;
-    cout << endl;
-    if (checkreg(firstreg) || checkreg(firstreg)){
-        indexfirstreg = checkregint(firstreg);
-        indexsecondreg = checkregint(secondreg);
-        reg.regprim[indexfirstreg] = reg.regprim[indexfirstreg] & reg.regprim[indexsecondreg];
-        regprint();
-        menu();
+    if (reg.memorytrue) {
+        int indexsecondreg;
+        int firstmem;
+        string secondreg;
+        cout << "Enter first memory:";
+        cin >> firstmem;
+        cout << endl;
+        cout << "Enter Second register:";
+        cin >> secondreg;
+        cout << endl;
+        if (checkmem(firstmem) || checkreg(secondreg)) {
+            indexsecondreg = checkregint(secondreg);
+            reg.memory[firstmem] = reg.memory[firstmem] & reg.regprim[indexsecondreg];
+            memprint(firstmem);
+            regprint();
+            menu();
+        } else {
+            AND();
+        }
     }
     else {
-        AND();
+        int indexfirstreg;
+        int indexsecondreg;
+        string firstreg;
+        string secondreg;
+        cout << "Enter first register:";
+        cin >> firstreg;
+        cout << endl;
+        cout << "Enter Second register:";
+        cin >> secondreg;
+        cout << endl;
+        if (checkreg(firstreg) || checkreg(secondreg)) {
+            indexfirstreg = checkregint(firstreg);
+            indexsecondreg = checkregint(secondreg);
+            reg.regprim[indexfirstreg] = reg.regprim[indexfirstreg] & reg.regprim[indexsecondreg];
+            regprint();
+            menu();
+        } else {
+            AND();
+        }
     }
 }
 
 void OR(){
     signal(SIGABRT, signal_handler);
-    int indexfirstreg;
-    int indexsecondreg;
-    string firstreg;
-    string secondreg;
-    cout << "Enter first register:";
-    cin >> firstreg;
-    cout << endl;
-    cout << "Enter Second register:";
-    cin >> secondreg;
-    cout << endl;
-    if (checkreg(firstreg) || checkreg(firstreg)){
-        indexfirstreg = checkregint(firstreg);
-        indexsecondreg = checkregint(secondreg);
-        reg.regprim[indexfirstreg] = reg.regprim[indexfirstreg] | reg.regprim[indexsecondreg];
-        regprint();
-        menu();
+    if (reg.memorytrue) {
+        int indexsecondreg;
+        int firstmem;
+        string secondreg;
+        cout << "Enter first memory address:";
+        cin >> hex >> firstmem;
+        cout << endl;
+        cout << "Enter Second register:";
+        cin >> secondreg;
+        cout << endl;
+        if (checkmem(firstmem) || checkreg(secondreg)) {
+            indexsecondreg = checkregint(secondreg);
+            reg.memory[firstmem] = reg.memory[firstmem] | reg.regprim[indexsecondreg];
+            memprint(firstmem);
+            regprint();
+            menu();
+        } else {
+            OR();
+        }
     }
-    else {
-        OR();
+    else{
+        int indexfirstreg;
+        int indexsecondreg;
+        string firstreg;
+        string secondreg;
+        cout << "Enter first register:";
+        cin >> firstreg;
+        cout << endl;
+        cout << "Enter Second register:";
+        cin >> secondreg;
+        cout << endl;
+        if (checkreg(firstreg) || checkreg(secondreg)) {
+            indexfirstreg = checkregint(firstreg);
+            indexsecondreg = checkregint(secondreg);
+            reg.regprim[indexfirstreg] = reg.regprim[indexfirstreg] | reg.regprim[indexsecondreg];
+            regprint();
+            menu();
+        } else {
+            OR();
+        }
     }
 }
 
 void XOR(){
     signal(SIGABRT, signal_handler);
-    int indexfirstreg;
-    int indexsecondreg;
-    string firstreg;
-    string secondreg;
-    cout << "Enter first register:";
-    cin >> firstreg;
-    cout << endl;
-    cout << "Enter Second register:";
-    cin >> secondreg;
-    cout << endl;
-    if (checkreg(firstreg) || checkreg(firstreg)){
-        indexfirstreg = checkregint(firstreg);
-        indexsecondreg = checkregint(secondreg);
-        reg.regprim[indexfirstreg] = reg.regprim[indexfirstreg] ^ reg.regprim[indexsecondreg];
-        regprint();
-        menu();
+    if (reg.memorytrue) {
+        int indexsecondreg;
+        int firstmem;
+        string secondreg;
+        cout << "Enter first memory address:";
+        cin >> hex >> firstmem;
+        cout << endl;
+        cout << "Enter Second register:";
+        cin >> secondreg;
+        cout << endl;
+        if (checkmem(firstmem) || checkreg(secondreg)) {
+            indexsecondreg = checkregint(secondreg);
+            reg.memory[firstmem] = reg.memory[firstmem] ^ reg.regprim[indexsecondreg];
+            memprint(firstmem);
+            regprint();
+            menu();
+        } else {
+            XOR();
+        }
     }
-    else {
-        XOR();
+    else{
+        int indexfirstreg;
+        int indexsecondreg;
+        string firstreg;
+        string secondreg;
+        cout << "Enter first register:";
+        cin >> firstreg;
+        cout << endl;
+        cout << "Enter Second register:";
+        cin >> secondreg;
+        cout << endl;
+        if (checkreg(firstreg) || checkreg(secondreg)) {
+            indexfirstreg = checkregint(firstreg);
+            indexsecondreg = checkregint(secondreg);
+            reg.regprim[indexfirstreg] = reg.regprim[indexfirstreg] ^ reg.regprim[indexsecondreg];
+            regprint();
+            menu();
+        } else {
+            XOR();
+        }
     }
 }
 
 void ADD(){
     signal(SIGABRT, signal_handler);
-    int indexfirstreg;
-    int indexsecondreg;
-    string firstreg;
-    string secondreg;
-    cout << "Enter first register:";
-    cin >> firstreg;
-    cout << endl;
-    cout << "Enter Second register:";
-    cin >> secondreg;
-    cout << endl;
-    if (checkreg(firstreg) || checkreg(firstreg)){
-        indexfirstreg = checkregint(firstreg);
-        indexsecondreg = checkregint(secondreg);
-        if ( reg.regprim[indexfirstreg] + reg.regprim[indexsecondreg] > 255){
-            reg.regprim[indexfirstreg] = (reg.regprim[indexfirstreg] + reg.regprim[indexsecondreg]) - 255;
+    if (reg.memorytrue) {
+        int indexsecondreg;
+        int firstmem;
+        string secondreg;
+        cout << "Enter first memory address:";
+        cin >> hex >>firstmem;
+        cout << endl;
+        cout << "Enter Second register:";
+        cin >> secondreg;
+        cout << endl;
+        if (checkmem(firstmem) || checkreg(secondreg)) {
+            indexsecondreg = checkregint(secondreg);
+            if (reg.memory[firstmem] + reg.regprim[indexsecondreg] > 255) {
+                reg.memory[firstmem] = (~(reg.memory[firstmem]) + reg.regprim[indexsecondreg]);
+            }
+            else {
+                reg.memory[firstmem] = reg.memory[firstmem] + reg.regprim[indexsecondreg];
+            }
+            memprint(firstmem);
+            regprint();
+            menu();
+        } else {
+            ADD();
         }
-        reg.regprim[indexfirstreg] =  reg.regprim[indexfirstreg] + reg.regprim[indexsecondreg];
-        regprint();
-        menu();
     }
-    else {
-        ADD();
+    else{
+        int indexfirstreg;
+        int indexsecondreg;
+        string firstreg;
+        string secondreg;
+        cout << "Enter first register:";
+        cin >> firstreg;
+        cout << endl;
+        cout << "Enter Second register:";
+        cin >> secondreg;
+        cout << endl;
+        if (checkreg(firstreg) || checkreg(secondreg)) {
+            indexfirstreg = checkregint(firstreg);
+            indexsecondreg = checkregint(secondreg);
+            if (reg.regprim[indexfirstreg] + reg.regprim[indexsecondreg] > 255) {
+                reg.regprim[indexfirstreg] = (~(reg.regprim[indexfirstreg]) + reg.regprim[indexsecondreg]);
+            }
+            else {
+                reg.regprim[indexfirstreg] = reg.regprim[indexfirstreg] + reg.regprim[indexsecondreg];
+            }
+            regprint();
+            menu();
+        } else {
+            ADD();
+        }
     }
 }
 
 void SUB(){
     signal(SIGABRT, signal_handler);
-    int indexfirstreg;
-    int indexsecondreg;
-    string firstreg;
-    string secondreg;
-    cout << "Enter first register:";
-    cin >> firstreg;
-    cout << endl;
-    cout << "Enter Second register:";
-    cin >> secondreg;
-    cout << endl;
-    if (checkreg(firstreg) || checkreg(firstreg)){
-        indexfirstreg = checkregint(firstreg);
-        indexsecondreg = checkregint(secondreg);
-        if ( reg.regprim[indexfirstreg] + reg.regprim[indexsecondreg] < 0 ){
-            reg.regprim[indexfirstreg] = ~(reg.regprim[indexfirstreg]) + reg.regprim[indexsecondreg];
+    if (reg.memorytrue) {
+        int indexsecondreg;
+        int firstmem;
+        string secondreg;
+        cout << "Enter first memory address:";
+        cin >> hex >> firstmem;
+        cout << endl;
+        cout << "Enter Second register:";
+        cin >> secondreg;
+        cout << endl;
+        if (checkmem(firstmem) || checkreg(secondreg)) {
+            indexsecondreg = checkregint(secondreg);
+            if (reg.memory[firstmem] + reg.regprim[indexsecondreg] < 0) {
+                reg.memory[firstmem] = ~(reg.memory[firstmem]) + reg.regprim[indexsecondreg];
+            }
+            else {
+                reg.memory[firstmem] = reg.memory[firstmem] - reg.regprim[indexsecondreg];
+            }
+            memprint(firstmem);
+            regprint();
+            menu();
+        } else {
+            SUB();
         }
-        reg.regprim[indexfirstreg] =  reg.regprim[indexfirstreg] - reg.regprim[indexsecondreg];
-        regprint();
-        menu();
     }
-    else {
-        SUB();
+    else{
+        int indexfirstreg;
+        int indexsecondreg;
+        string firstreg;
+        string secondreg;
+        cout << "Enter first register:";
+        cin >> firstreg;
+        cout << endl;
+        cout << "Enter Second register:";
+        cin >> secondreg;
+        cout << endl;
+        if (checkreg(firstreg) || checkreg(secondreg)) {
+            indexfirstreg = checkregint(firstreg);
+            indexsecondreg = checkregint(secondreg);
+            if (reg.regprim[indexfirstreg] + reg.regprim[indexsecondreg] < 0) {
+                reg.regprim[indexfirstreg] = ~(reg.regprim[indexfirstreg]) + reg.regprim[indexsecondreg];
+            }
+            reg.regprim[indexfirstreg] = reg.regprim[indexfirstreg] - reg.regprim[indexsecondreg];
+            regprint();
+            menu();
+        } else {
+            SUB();
+        }
     }
 }
 
 void menu(){
     signal(SIGABRT, signal_handler);
     int instruct;
+    string mem;
+    cout << "Use memory instead register? Y/N:";
+    cin >> mem;
+    cout << endl;
+    if (mem == "Y" or mem == "y"){
+        reg.memorytrue = true;
+    }
     cout << "1. MOV" << endl;
     cout << "2. XCHG" << endl;
     cout << "3. NOT" << endl;
@@ -375,8 +619,10 @@ void regfill(){
 
 
 
+
 int main() {
     signal(SIGABRT, signal_handler);
+    Random();
     regfill();
     menu();
     return 0;
