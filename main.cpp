@@ -18,7 +18,7 @@ class Register {
         int lenmem = 65536;
         string reg[8] = {"AH","AL","BH","BL","CH","CL","DH","DL"};
         uint8_t regprim[8] = {0,0,0,0,0,0,0,0};
-        uint8_t memory[65536];
+        uint8_t memory[65536]{};
         bool memorytrue = false;
 };
 Register reg;
