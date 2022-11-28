@@ -10,6 +10,7 @@ bool checkmem();
 bool checkdecval();
 void regprint();
 void memprint();
+void membool();
 void signal_handler();
 void MOV();
 void XCHG();

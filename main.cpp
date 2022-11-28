@@ -57,6 +57,15 @@ void signal_handler(int signal_num)
     // It terminates the program
     exit(signal_num);
 }
+void membool(){
+    string mem;
+    cout << "Use memory instead register? Y/N:";
+    cin >> mem;
+    cout << endl;
+    if (mem == "Y" or mem == "y"){
+        reg.memorytrue = true;
+    }
+}
 // Function that checks if input exist in register
 bool checkreg(const string& namereg){
     int val = 0;
@@ -77,7 +86,7 @@ bool checkdecval(int hexval){
 }
 
 void memprint(int index){
-    cout << "Memory " << index << " : " << reg.memory[index] << endl;
+    cout << "Memory " << hex << index << " : " << hex << unsigned(reg.memory[index]) << endl;
     cout << endl;
 }
 
@@ -537,13 +546,7 @@ void SUB(){
 void menu(){
     signal(SIGABRT, signal_handler);
     int instruct;
-    string mem;
-    cout << "Use memory instead register? Y/N:";
-    cin >> mem;
     cout << endl;
-    if (mem == "Y" or mem == "y"){
-        reg.memorytrue = true;
-    }
     cout << "1. MOV" << endl;
     cout << "2. XCHG" << endl;
     cout << "3. NOT" << endl;
@@ -581,6 +584,7 @@ void menu(){
             SUB();
         case 11:
             exit(0);
+            break;
         default:
             menu();
     }
@@ -623,6 +627,7 @@ void regfill(){
 int main() {
     signal(SIGABRT, signal_handler);
     Random();
+    membool();
     regfill();
     menu();
     return 0;
