@@ -11,7 +11,7 @@
 
 using Rand = effolkronium::random_static;
 using namespace std;
-
+// Class that stores Register,Memory and memory switcher
 class Register {
     public:
         int lenarr = 8;
@@ -23,12 +23,13 @@ class Register {
 };
 Register reg;
 
+//Function that input random data in to the memory
 void Random(){
     for (int i = 0; i < reg.lenmem ; i++){
         reg.memory[i] = Rand::get(0,255);
     }
 }
-
+//Function that checks if memory address is correct
 bool checkmem(int mem){
     if (mem < 65536 && mem >=0){
         return true;
@@ -49,7 +50,7 @@ int checkregint(const string& namereg){
     }
     return false;
 }
-
+//Function that handle ctrl-c presses
 void signal_handler(int signal_num)
 {
     cout << "The interrupt signal is (" << signal_num << "). \n";
@@ -57,6 +58,7 @@ void signal_handler(int signal_num)
     // It terminates the program
     exit(signal_num);
 }
+//Function that asks if we want to use memory
 void membool(){
     string mem;
     cout << "Use memory instead register? Y/N:";
@@ -77,19 +79,19 @@ bool checkreg(const string& namereg){
     }
     return false;
 }
-
+//Function that check if input value is in range
 bool checkdecval(int hexval){
     if (hexval <= 255){
         return true;
     }
     return false;
 }
-
+//Function that prints last used memory cell
 void memprint(int index){
     cout << "Memory " << hex << index << " : " << hex << unsigned(reg.memory[index]) << endl;
     cout << endl;
 }
-
+//Function that prints register
 void regprint(){
     signal(SIGABRT, signal_handler);
     for (int x = 0; x < reg.lenarr;x++){
@@ -100,7 +102,7 @@ void regprint(){
         cout << reg.reg[x] << " : " << res << endl;
     }
 }
-
+//Function that Move data from register to another register/memory
 void MOV(){
     signal(SIGABRT, signal_handler);
     if (reg.memorytrue){
@@ -145,7 +147,7 @@ void MOV(){
         }
     }
 }
-
+//Function that Change data between register and another register/memory
 void XCHG(){
     signal(SIGABRT, signal_handler);
     if (reg.memorytrue) {
@@ -194,7 +196,7 @@ void XCHG(){
         }
     }
 }
-
+//Function that Negate data from register or memory
 void NOT(){
     if (reg.memorytrue) {
         int firstreg;
@@ -227,7 +229,7 @@ void NOT(){
         }
     }
 }
-
+//Function that increment data from register / memory
 void INC(){
     if (reg.memorytrue) {
         signal(SIGABRT, signal_handler);
@@ -263,7 +265,7 @@ void INC(){
         }
     }
 }
-
+//Function that decrement data from register / memory
 void DEC(){
     if (reg.memorytrue) {
         signal(SIGABRT, signal_handler);
@@ -299,6 +301,7 @@ void DEC(){
         }
     }
 }
+//Logic Functions
 
 void AND(){
     signal(SIGABRT, signal_handler);
@@ -434,7 +437,7 @@ void XOR(){
         }
     }
 }
-
+//Function that add data from register to register / memory
 void ADD(){
     signal(SIGABRT, signal_handler);
     if (reg.memorytrue) {
@@ -489,7 +492,7 @@ void ADD(){
         }
     }
 }
-
+//Function that substract data from register to register / memory
 void SUB(){
     signal(SIGABRT, signal_handler);
     if (reg.memorytrue) {
@@ -542,7 +545,7 @@ void SUB(){
         }
     }
 }
-
+// Menu Function
 void menu(){
     signal(SIGABRT, signal_handler);
     int instruct;
@@ -584,13 +587,12 @@ void menu(){
             SUB();
         case 11:
             exit(0);
-            break;
         default:
             menu();
     }
 }
 
-
+// Function that fill register with given data
 void defregfill(){
     signal(SIGABRT, signal_handler);
     int defreg[8] ={0x01,0x04,0x69,0x35,0x58,0xA1,0x2C,0x97};
@@ -599,7 +601,7 @@ void defregfill(){
     regprint();
     menu();
 }
-
+// Function that fill register with entered data
 void regfill(){
     signal(SIGABRT, signal_handler);
     string defreg;
